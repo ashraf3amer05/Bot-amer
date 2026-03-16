@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>محاكي بوت عامر جروب</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & Base ─────────────────────────────────────── */
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+  :root {
+    --emerald:   #10b981;
+    --emerald-d: #059669;
+    --gold:      #f59e0b;
+    --gold-d:    #d97706;
+    --blue:      #3b82f6;
+    --blue-d:    #2563eb;
+    --red:       #ef4444;
+
+    --bg:        #0a0f1a;
+    --surface:   rgba(255,255,255,0.05);
+    --glass:     rgba(255,255,255,0.08);
+    --border:    rgba(255,255,255,0.10);
+    --text:      #e2e8f0;
+    --muted:     #64748b;
+    --tg-blue:   #2b5278;
+    --tg-msg-me: #2b5278;
+    --tg-msg-bg: rgba(255,255,255,0.07);
+  }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  /* ── Background mesh ──────────────────────────────────── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 10%, rgba(16,185,129,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 80%, rgba(59,130,246,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 50%, rgba(245,158,11,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Layout ───────────────────────────────────────────── */
+  .page {
+    position: relative; z-index: 1;
+    width: 100%; max-width: 1100px;
+    padding: 40px 24px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+    align-items: start;
+  }
+
+  /* ── Left panel: info ─────────────────────────────────── */
+  .info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .brand-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 100px;
+    padding: 6px 16px;
+    width: fit-content;
+    font-size: 12px;
+    color: var(--emerald);
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .brand h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.6) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .brand h1 span {
+    background: linear-gradient(135deg, var(--emerald), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .brand p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    font-weight: 300;
+  }
+
+  /* ── Features grid ────────────────────────────────────── */
+  .features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .feat {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    backdrop-filter: blur(12px);
+    transition: all 0.3s;
+    cursor: default;
+  }
+  .feat:hover {
+    background: rgba(255,255,255,0.11);
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.18);
+  }
+
+  .feat-icon { font-size: 24px; margin-bottom: 8px; }
+  .feat-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .feat-desc  { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  /* ── Business lines ───────────────────────────────────── */
+  .biz-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .biz-line {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    backdrop-filter: blur(12px);
+  }
+
+  .biz-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .biz-info { flex: 1; }
+  .biz-name  { font-size: 13px; font-weight: 700; }
+  .biz-sub   { font-size: 11px; color: var(--muted); }
+  .biz-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 100px;
+  }
+
+  /* ── Right panel: phone ───────────────────────────────── */
+  .phone-wrap {
+    position: sticky;
+    top: 40px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .phone-frame {
+    width: 340px;
+    background: #1a1a2e;
+    border-radius: 44px;
+    padding: 14px;
+    box-shadow:
+      0 0 0 2px #2a2a4e,
+      0 40px 80px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative;
+  }
+
+  .phone-notch {
+    width: 120px; height: 28px;
+    background: #0d0d1a;
+    border-radius: 0 0 20px 20px;
+    margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px;
+  }
+  .notch-cam {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #1e1e3a;
+    border: 1.5px solid #2a2a4e;
+  }
+  .notch-speaker {
+    width: 40px; height: 4px;
+    border-radius: 4px;
+    background: #1e1e3a;
+  }
+
+  .phone-screen {
+    background: #0f1923;
+    border-radius: 30px;
+    overflow: hidden;
+    height: 640px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Telegram UI ──────────────────────────────────────── */
+  .tg-header {
+    background: linear-gradient(135deg, #1a2744 0%, #0f1923 100%);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+
+  .tg-back { color: #5499d2; font-size: 18px; cursor: pointer; }
+
+  .tg-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--emerald), var(--blue));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .tg-info { flex: 1; }
+  .tg-name   { font-size: 13px; font-weight: 700; }
+  .tg-status {
+    font-size: 10px;
+    color: var(--emerald);
+    display: flex; align-items: center; gap: 4px;
+  }
+  .tg-status::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--emerald);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+  }
+
+  .tg-menu { color: var(--muted); font-size: 18px; cursor: pointer; }
+
+  /* ── Chat area ────────────────────────────────────────── */
+  .tg-chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+
+  /* Date label */
+  .chat-date {
+    text-align: center;
+    font-size: 10px;
+    color: var(--muted);
+    background: rgba(255,255,255,0.05);
+    border-radius: 100px;
+    padding: 3px 12px;
+    width: fit-content;
+    margin: 0 auto 4px;
+    align-self: center;
+  }
+
+  /* Bot message */
+  .msg-bot {
+    align-self: flex-start;
+    max-width: 88%;
+    background: var(--tg-msg-bg);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 4px 16px 16px 16px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.7;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  /* User message */
+  .msg-user {
+    align-self: flex-end;
+    max-width: 80%;
+    background: var(--tg-msg-me);
+    border-radius: 16px 4px 16px 16px;
+    padding: 8px 12px;
+    font-size: 12px;
+    line-height: 1.6;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .msg-time {
+    font-size: 9px;
+    color: rgba(255,255,255,0.35);
+    text-align: left;
+    margin-top: 4px;
+  }
+
+  /* Inline keyboard */
+  .inline-kb {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .inline-kb-row { display: flex; gap: 4px; }
+
+  .kb-btn {
+    flex: 1;
+    background: rgba(59,130,246,0.2);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 10px;
+    color: #93c5fd;
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    text-align: center;
+    transition: all 0.2s;
+  }
+
+  .kb-btn:hover {
+    background: rgba(59,130,246,0.35);
+    border-color: rgba(59,130,246,0.5);
+  }
+  .kb-btn:active { transform: scale(0.97); }
+
+  /* Notification badge */
+  .notify-badge {
+    display: inline-block;
+    background: var(--emerald);
+    color: #000;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 9px;
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  /* Divider in message */
+  .msg-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    margin: 6px 0;
+  }
+
+  .msg-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .msg-label { color: var(--muted); font-size: 10px; }
+  .msg-val   { font-weight: 700; font-size: 11px; }
+
+  .val-green { color: var(--emerald); }
+  .val-red   { color: var(--red); }
+  .val-gold  { color: var(--gold); }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Reply keyboard ───────────────────────────────────── */
+  .tg-keyboard {
+    background: #1a2030;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    padding: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .rk-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 9px 8px;
+    font-size: 10.5px;
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Cairo', sans-serif;
+    text-align: center;
+    transition: all 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rk-btn:hover  { background: rgba(255,255,255,0.13); transform: translateY(-1px); }
+  .rk-btn:active { transform: scale(0.97); }
+
+  .rk-btn.wide { grid-column: 1 / -1; }
+
+  /* ── Typing ───────────────────────────────────────────── */
+  .typing {
+    display: flex;
+    gap: 4px;
+    padding: 10px 14px;
+    background: var(--tg-msg-bg);
+    border-radius: 4px 16px 16px 16px;
+    width: fit-content;
+    align-self: flex-start;
+  }
+  .typing span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: typing 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes typing {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40%           { transform: translateY(-5px); opacity: 1; }
+  }
+
+  /* ── Responsive ───────────────────────────────────────── */
+  @media (max-width: 800px) {
+    .page {
+      grid-template-columns: 1fr;
+      padding: 24px 16px;
+    }
+    .phone-wrap { position: static; }
+    .features   { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 480px) {
+    .phone-frame { width: 100%; max-width: 340px; }
+    .features    { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══ Left: Info ══════════════════════════════════════ -->
+  <div class="info-panel">
+
+    <div class="brand">
+      <div class="brand-badge">🤖 بوت تليجرام</div>
+      <h1>بوت <span>عامر جروب</span></h1>
+      <p>نظام متكامل لخدمة عملاء عامر جروب عبر تليجرام — يتيح للعملاء متابعة حساباتهم ومديونياتهم لحظة بلحظة عبر إشعارات فورية.</p>
+    </div>
+
+    <!-- Business lines -->
+    <div class="biz-lines">
+      <div class="biz-line">
+        <div class="biz-dot" style="background:var(--emerald)"></div>
+        <div class="biz-info">
+          <div class="biz-name">🌾 محل الحبوب والأعلاف</div>
+          <div class="biz-sub">قمح · ذرة · أعلاف · كسب صويا · ردة</div>
+        </div>
+        <div class="biz-badge" style="background:rgba(16,185,129,0.15);color:var(--emerald)">نشط</div>
+      </div>
+      <div class="biz-line">
+        <div class="biz-dot" style="background:var(--blue)"></div>
+        <div class="biz-info">
+          <div class="biz-name">💻 محل الكمبيوتر</div>
+          <div class="biz-sub">أجهزة · إكسسوارات · صيانة</div>
+        </div>
+        <div class="biz-badge" style="background:rgba(59,130,246,0.15);color:var(--blue)">نشط</div>
+      </div>
+      <div class="biz-line">
+        <div class="biz-dot" style="background:var(--gold)"></div>
+        <div class="biz-info">
+          <div class="biz-name">💳 خدمة المدفوعات الإلكترونية</div>
+          <div class="biz-sub">فودافون كاش · إتصالات كاش · شحن</div>
+        </div>
+        <div class="biz-badge" style="background:rgba(245,158,11,0.15);color:var(--gold)">نشط</div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">💰</div>
+        <div class="feat-title">رصيد لحظي</div>
+        <div class="feat-desc">يشوف العميل مديونيته في كل خط على حدة أو إجمالي</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔔</div>
+        <div class="feat-title">إشعار فوري</div>
+        <div class="feat-desc">كل ما تسجّل فاتورة يوصل إشعار للعميل على طول</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📋</div>
+        <div class="feat-title">سجل مفصّل</div>
+        <div class="feat-desc">كل المعاملات مع التاريخ والمبلغ والرصيد التراكمي</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⚙️</div>
+        <div class="feat-title">لوحة إدارة</div>
+        <div class="feat-desc">تقرير يومي وأكبر المديونيات وإشعارات جماعية</div>
+      </div>
+    </div>
+
+    <!-- Quick setup -->
+    <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:16px;padding:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--emerald);margin-bottom:12px;">⚡ تشغيل في 4 خطوات</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--muted);line-height:1.8;">
+        <div><span style="color:var(--emerald);font-weight:700;">1.</span> أنشئ بوت من @BotFather واحصل على التوكن</div>
+        <div><span style="color:var(--emerald);font-weight:700;">2.</span> حط التوكن في <code style="font-family:'JetBrains Mono';background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;">.env</code></div>
+        <div><span style="color:var(--emerald);font-weight:700;">3.</span> <code style="font-family:'JetBrains Mono';background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;">pip install -r requirements.txt</code></div>
+        <div><span style="color:var(--emerald);font-weight:700;">4.</span> <code style="font-family:'JetBrains Mono';background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;">python run.py</code></div>
+      </div>
+    </div>
+
+  </div><!-- /info-panel -->
+
+  <!-- ══ Right: Phone ════════════════════════════════════ -->
+  <div class="phone-wrap">
+    <div class="phone-frame">
+      <div class="phone-notch">
+        <div class="notch-cam"></div>
+        <div class="notch-speaker"></div>
+        <div class="notch-cam"></div>
+      </div>
+
+      <div class="phone-screen">
+
+        <!-- Header -->
+        <div class="tg-header">
+          <div class="tg-back">‹</div>
+          <div class="tg-avatar">🌾</div>
+          <div class="tg-info">
+            <div class="tg-name">عامر جروب</div>
+            <div class="tg-status">نشط الآن</div>
+          </div>
+          <div class="tg-menu">⋮</div>
+        </div>
+
+        <!-- Chat messages -->
+        <div class="tg-chat" id="chat">
+          <div class="chat-date">اليوم</div>
+        </div>
+
+        <!-- Reply keyboard -->
+        <div class="tg-keyboard" id="keyboard">
+          <button class="rk-btn" onclick="sendMsg('💰 رصيدي ومديونيتي')">💰 رصيدي ومديونيتي</button>
+          <button class="rk-btn" onclick="sendMsg('📋 سجل المعاملات')">📋 سجل المعاملات</button>
+          <button class="rk-btn" onclick="sendMsg('🌾 الحبوب')">🌾 الحبوب</button>
+          <button class="rk-btn" onclick="sendMsg('💻 الكمبيوتر')">💻 الكمبيوتر</button>
+          <button class="rk-btn" onclick="sendMsg('💳 المدفوعات')">💳 المدفوعات</button>
+          <button class="rk-btn" onclick="sendMsg('📞 تواصل معنا')">📞 تواصل معنا</button>
+          <button class="rk-btn wide" onclick="showNotification()">🔔 محاكاة إشعار فاتورة جديدة</button>
+        </div>
+
+      </div><!-- /phone-screen -->
+    </div><!-- /phone-frame -->
+  </div><!-- /phone-wrap -->
+
+</div><!-- /page -->
+
+<script>
+  const chat = document.getElementById('chat');
+  const now = () => new Date().toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'});
+
+  /* ── Data ─────────────────────────────────────────────── */
+  const data = {
+    name: 'أحمد محمد السيد',
+    grain:    { purchases: 31000, payments: 13000 },
+    computer: { purchases: 3500,  payments: 1500  },
+    payments: { purchases: 200,   payments: 200   },
+  };
+  const fmt = n => n.toLocaleString('ar-EG') + ' ج.م';
+
+  /* ── Helpers ──────────────────────────────────────────── */
+  function addTyping() {
+    const t = document.createElement('div');
+    t.className = 'typing'; t.id = 'typing';
+    t.innerHTML = '<span></span><span></span><span></span>';
+    chat.appendChild(t);
+    chat.scrollTop = chat.scrollHeight;
+    return t;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing');
+    if (t) t.remove();
+  }
+
+  function addMsg(html, isUser = false, delay = 0) {
+    return new Promise(res => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = isUser ? 'msg-user' : 'msg-bot';
+        div.innerHTML = html + `<div class="msg-time">${now()}</div>`;
+        chat.appendChild(div);
+        chat.scrollTop = chat.scrollHeight;
+        res();
+      }, delay);
+    });
+  }
+
+  function row(label, val, cls='') {
+    return `<div class="msg-row"><span class="msg-label">${label}</span><span class="msg-val ${cls}">${val}</span></div>`;
+  }
+  function divider() { return '<hr class="msg-divider">'; }
+
+  /* ── Responses ────────────────────────────────────────── */
+  const responses = {
+
+    '💰 رصيدي ومديونيتي': async () => {
+      const t = addTyping();
+      await delay(900);
+      removeTyping();
+
+      const g = data.grain, c = data.computer, p = data.payments;
+      const gDebt = g.purchases - g.payments;
+      const cDebt = c.purchases - c.payments;
+      const total = gDebt + cDebt;
+
+      await addMsg(
+        `💼 <b>كشف الرصيد الإجمالي</b><br>
+        👤 ${data.name}<br>
+        ${divider()}
+        ${row('🌾 الحبوب — مشتريات', fmt(g.purchases))}
+        ${row('🌾 الحبوب — مدفوعات', fmt(g.payments))}
+        ${row('🌾 الحبوب — الرصيد', fmt(gDebt), 'val-red')}
+        ${divider()}
+        ${row('💻 الكمبيوتر — مشتريات', fmt(c.purchases))}
+        ${row('💻 الكمبيوتر — مدفوعات', fmt(c.payments))}
+        ${row('💻 الكمبيوتر — الرصيد', fmt(cDebt), 'val-red')}
+        ${divider()}
+        ${row('💳 المدفوعات', '✅ مسدد', 'val-green')}
+        ${divider()}
+        <div class="msg-row"><span class="msg-label">⚠️ إجمالي المديونية</span><span class="msg-val val-red">${fmt(total)}</span></div>
+        <div class="inline-kb">
+          <div class="inline-kb-row">
+            <button class="kb-btn" onclick="sendMsg('🌾 الحبوب')">🌾 تفاصيل الحبوب</button>
+            <button class="kb-btn" onclick="sendMsg('💻 الكمبيوتر')">💻 تفاصيل الكمبيوتر</button>
+          </div>
+        </div>`
+      );
+    },
+
+    '🌾 الحبوب': async () => {
+      const t = addTyping();
+      await delay(700);
+      removeTyping();
+      const g = data.grain;
+      const debt = g.purchases - g.payments;
+
+      await addMsg(
+        `🌾 <b>الحبوب والأعلاف</b>
+        ${divider()}
+        ${row('📦 إجمالي المشتريات', fmt(g.purchases))}
+        ${row('💳 إجمالي المدفوعات', fmt(g.payments))}
+        ${row('💼 المديونية الحالية', fmt(debt), 'val-red')}
+        ${divider()}
+        <b>آخر 5 معاملات:</b><br>
+        🔴 شراء  ${fmt(14400)}  |  كسب صويا - 2 طن<br>
+        🔴 شراء  ${fmt(7600)}   |  ذرة - 2 طن<br>
+        🟢 دفع   ${fmt(8000)}   |  تحويل بنكي<br>
+        🔴 شراء  ${fmt(9000)}   |  قمح - 2 طن<br>
+        🟢 دفع   ${fmt(5000)}   |  دفعة نقدية
+        <div class="inline-kb">
+          <button class="kb-btn" onclick="sendMsg('📋 سجل المعاملات')">📋 كل المعاملات</button>
+        </div>`
+      );
+    },
+
+    '💻 الكمبيوتر': async () => {
+      const t = addTyping();
+      await delay(700);
+      removeTyping();
+      const c = data.computer;
+      const debt = c.purchases - c.payments;
+
+      await addMsg(
+        `💻 <b>محل الكمبيوتر</b>
+        ${divider()}
+        ${row('📦 إجمالي المشتريات', fmt(c.purchases))}
+        ${row('💳 إجمالي المدفوعات', fmt(c.payments))}
+        ${row('💼 المديونية الحالية', fmt(debt), 'val-red')}
+        ${divider()}
+        <b>آخر معاملات:</b><br>
+        🔴 شراء  ${fmt(3500)}  |  لابتوب HP<br>
+        🟢 دفع   ${fmt(1500)}  |  دفعة أولى`
+      );
+    },
+
+    '💳 المدفوعات': async () => {
+      const t = addTyping();
+      await delay(600);
+      removeTyping();
+      await addMsg(
+        `💳 <b>خدمة المدفوعات الإلكترونية</b>
+        ${divider()}
+        ${row('📦 إجمالي المشتريات', fmt(200))}
+        ${row('💳 إجمالي المدفوعات', fmt(200))}
+        ${row('💼 الرصيد', '✅ مسدد بالكامل', 'val-green')}`
+      );
+    },
+
+    '📋 سجل المعاملات': async () => {
+      const t = addTyping();
+      await delay(800);
+      removeTyping();
+      await addMsg(
+        `📋 <b>سجل المعاملات</b><br>اختر الخط:
+        <div class="inline-kb">
+          <div class="inline-kb-row">
+            <button class="kb-btn" onclick="sendMsg('🌾 الحبوب')">🌾 الحبوب</button>
+            <button class="kb-btn" onclick="sendMsg('💻 الكمبيوتر')">💻 الكمبيوتر</button>
+            <button class="kb-btn" onclick="sendMsg('💳 المدفوعات')">💳 المدفوعات</button>
+          </div>
+          <button class="kb-btn" onclick="sendMsg('📋 كل المعاملات')">📋 عرض الكل</button>
+        </div>`
+      );
+    },
+
+    '📋 كل المعاملات': async () => {
+      const t = addTyping();
+      await delay(900);
+      removeTyping();
+      await addMsg(
+        `📋 <b>آخر المعاملات — جميع الخطوط</b>
+        ${divider()}
+        🔴 شراء  ${fmt(14400)}  🌾  كسب صويا<br>
+        🔴 شراء  ${fmt(3500)}   💻  لابتوب HP<br>
+        🟢 دفع   ${fmt(8000)}   🌾  تحويل بنكي<br>
+        🔴 شراء  ${fmt(7600)}   🌾  ذرة - 2 طن<br>
+        🟢 دفع   ${fmt(1500)}   💻  دفعة أولى<br>
+        🟢 دفع   ${fmt(5000)}   🌾  دفعة نقدية<br>
+        🔴 شراء  ${fmt(9000)}   🌾  قمح - 2 طن<br>
+        💳 ${fmt(200)} — مدفوعات إلكترونية (مسدد)`
+      );
+    },
+
+    '📞 تواصل معنا': async () => {
+      await delay(400);
+      await addMsg(
+        `📞 <b>تواصل مع عامر جروب</b>
+        ${divider()}
+        🌾 الحبوب:     01xxxxxxxxx<br>
+        💻 الكمبيوتر:  01xxxxxxxxx<br>
+        💳 المدفوعات:  01xxxxxxxxx<br>
+        ${divider()}
+        🕐 مواعيد العمل: 8 ص — 8 م`
+      );
+    },
+  };
+
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  /* ── sendMsg ──────────────────────────────────────────── */
+  let busy = false;
+  async function sendMsg(text) {
+    if (busy) return;
+    busy = true;
+    // User bubble
+    await addMsg(text, true);
+    // Response
+    const handler = responses[text];
+    if (handler) {
+      await handler();
+    } else {
+      await delay(400);
+      await addMsg('اختر من القائمة 👇');
+    }
+    busy = false;
+  }
+
+  /* ── Notification simulation ──────────────────────────── */
+  async function showNotification() {
+    if (busy) return;
+    busy = true;
+    const t = addTyping();
+    await delay(600);
+    removeTyping();
+
+    const products = ['قمح - 3 طن', 'ذرة - 1.5 طن', 'كسب صويا - 2 طن', 'أعلاف دواجن - 5 طن'];
+    const amounts  = [13500, 5700, 14400, 25500];
+    const idx = Math.floor(Math.random() * products.length);
+    const inv = 'INV-' + String(Math.floor(Math.random()*900+100));
+    const amt = amounts[idx];
+    const newBal = (data.grain.purchases + amt) - data.grain.payments;
+
+    await addMsg(
+      `🔔 <b>فاتورة جديدة — الحبوب والأعلاف</b>
+      ${divider()}
+      🌾 <b>${products[idx]}</b><br>
+      ${row('💰 القيمة', fmt(amt), 'val-gold')}
+      ${row('🧾 رقم الفاتورة', inv)}
+      ${row('📅 التاريخ', new Date().toLocaleDateString('ar-EG'))}
+      ${divider()}
+      ${row('💼 مديونيتك الحالية', fmt(newBal), 'val-red')}`
+    );
+
+    // Update data
+    data.grain.purchases += amt;
+
+    busy = false;
+  }
+
+  /* ── Auto welcome ─────────────────────────────────────── */
+  window.addEventListener('load', async () => {
+    await delay(600);
+    const t = addTyping();
+    await delay(1100);
+    removeTyping();
+    await addMsg(
+      `👋 مرحباً بك في <b>بوت عامر جروب</b><br><br>
+      يمكنك من خلال هذا البوت:<br>
+      • 💰 متابعة رصيدك ومديونيتك<br>
+      • 📋 عرض سجل معاملاتك<br>
+      • 🔔 استقبال إشعارات الفواتير فوراً<br><br>
+      اختر ما تريد من القائمة أدناه 👇`
+    );
+  });
+</script>
+</body>
+</html>
